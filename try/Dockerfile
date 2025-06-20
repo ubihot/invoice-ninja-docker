@@ -3,35 +3,6 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Install system dependencies, including supervisor, mysql client, and PDF tools
-# This is adapted from the official InvoiceNinja Dockerfile for robustness
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     git \
-#     unzip \
-#     zip \
-#     mariadb-client \
-#     gpg \
-#     supervisor \
-#     nodejs \
-#     npm \
-#     # PDF & Font Support
-#     fonts-noto-cjk-extra fonts-wqy-microhei fonts-wqy-zenhei xfonts-wqy \
-#     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# # Install Google Chrome for PDF generation (crucial for production)
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     && if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
-#     mkdir -p /etc/apt/keyrings \
-#     && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google.gpg \
-#     && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google.gpg] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-#     && apt-get update && apt-get install -y --no-install-recommends google-chrome-stable; \
-#     elif [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-#     apt-get install -y --no-install-recommends chromium; \
-#     fi \
-#     && apt-get purge -y gpg \
-#     && apt-get autoremove -y \
-#     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     mariadb-client \
