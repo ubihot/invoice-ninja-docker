@@ -1,0 +1,3 @@
+[submodule "try/invoiceninja"]
+	path = try/invoiceninja
+	url = git@github.com:invoiceninja/invoiceninja.git
