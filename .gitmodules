@@ -1,3 +1,6 @@
 [submodule "try/invoiceninja"]
 	path = try/invoiceninja
 	url = git@github.com:invoiceninja/invoiceninja.git
+[submodule "try/ui"]
+	path = try/ui
+	url = git@github.com:invoiceninja/ui.git
