@@ -115,7 +115,7 @@ RUN rm -rf .git
 RUN rm -rf ./ui || true
 
 # Set permissions: directories 755, files 644
-RUN chmod -R a=r,u+w,a+X .
+#RUN chmod -R a=r,u+w,a+X .
 
 # Installs the JavaScript dependencies defined in package.json.
 
@@ -127,7 +127,7 @@ RUN chmod -R a=r,u+w,a+X .
 
 # creates a symbolic link at /var/www/html/public/storage that points to 
 # the /var/www/html/storage/app/public directory
-#RUN php artisan storage:link
+RUN php artisan storage:link
 
 
 #RUN mkdir -p /tmp/public 
@@ -141,8 +141,8 @@ RUN mv /var/www/html/public /tmp/public
 #COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # critical for Laravel. It changes the ownership of the storage and bootstrap/cache directories to the www-data user, allowing the web server to write logs, cache files, and file uploads. 
-#RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-#    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Add initialization script
 # Copies an initialization script (init.sh) into the image and makes it executable. 
