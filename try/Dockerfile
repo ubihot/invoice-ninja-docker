@@ -44,7 +44,6 @@ COPY --from=ghcr.io/mlocati/php-extension-installer /usr/bin/install-php-extensi
 RUN install-php-extensions pdo_mysql zip gd bcmath mbstring exif pcntl bcmath gd
 
 # Configure PHP
-# TODO understand this better
 RUN ln -s "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # these will be beaten by the mounted volumes in the docker-compose
@@ -55,22 +54,6 @@ RUN ln -s "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Copy Composer executable
 # this copies the Composer executable from the official Composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-
-# --- This is where your custom code comes in ---
-# Copy your local invoiceninja source code into the image
-#
-
-
-# the actual InvoiceNinja application source code is copied from your local machine into the container's working directory.
-# TODO the question here is what do we copy?? eveything??
-#COPY ./invoiceninja/ /var/www/html/
-
-# two experiments
-# - give it relative path
-# - check what is in the original invoiceninja image that in the other project is pulled
-#COPY ./invoiceninja/public /tmp/public  
-#USER www-data
 
 #COPY --exclude=./invoiceninja/node_modules --exclude=./invoiceninja/tests --exclude=./invoiceninja/.github ./invoiceninja .
 COPY ./invoiceninja .
@@ -85,12 +68,10 @@ RUN composer install --no-interaction --no-scripts --prefer-dist
 # PREPARE REACT FE
 # https://github.com/invoiceninja/invoiceninja/blob/v5-stable/.github/workflows/react_release.yml#L42
 COPY ./ui ./ui
-#COPY ./ui/.env.example .ui.env 
 # https://github.com/invoiceninja/invoiceninja/blob/0ea98ffe7dc29c6a3c42f7fa5b0474227858297c/.github/workflows/react_release.yml#L41C1-L41C31
 WORKDIR /var/www/html/ui
 RUN cp .env.example .env
-
-COPY ../invoiceninja/vite.config.ts.react ./vite.config.js
+RUN cp ../vite.config.ts.react ./vite.config.js
 
 # we are still in /var/www/html/ui
 RUN npm install
@@ -104,40 +85,24 @@ WORKDIR /var/www/html/
 RUN npm install
 RUN npm run production
 
-# hmm I'm not sure about this but might be needed
-# RUN ln -s ./resources/views/react/index.blade.php ./public/index.html
-
-
 # Cleanup Builds
 # https://github.com/invoiceninja/invoiceninja/blob/v5-stable/.github/workflows/react_release.yml#L54C15-L54C29
 RUN rm -rf node_modules
 RUN rm -rf .git
 RUN rm -rf ./ui || true
 
-# Set permissions: directories 755, files 644
-#RUN chmod -R a=r,u+w,a+X .
-
-# Installs the JavaScript dependencies defined in package.json.
-
-# Compiles the frontend assets (e.g., TypeScript/Sass into plain JavaScript/CSS) for production use.
-
-
 # Every RUN command creates a new, permanent layer in the final image.
-
 
 # creates a symbolic link at /var/www/html/public/storage that points to 
 # the /var/www/html/storage/app/public directory
 RUN php artisan storage:link
 
-
-#RUN mkdir -p /tmp/public 
 RUN mv /var/www/html/public /tmp/public
 
-
-
-
 ## Copy supervisor and php configurations
-# Copies the Supervisor configuration file into the image. This file defines what processes Supervisor should start and monitor (e.g., php-fpm).
+# Copies the Supervisor configuration file into the image.
+# This file defines what processes Supervisor should start and monitor (e.g., php-fpm).
+# NOTE: this is not needed cause we have the bind volume in the dockercompose
 #COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # critical for Laravel. It changes the ownership of the storage and bootstrap/cache directories to the www-data user, allowing the web server to write logs, cache files, and file uploads. 
@@ -149,8 +114,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 COPY --chmod=0755 scripts/init.sh /usr/local/bin/init.sh
 
 # Configures Docker to periodically check if the container is healthy by running the specified command. Here, it checks if the php-fpm master process is running.
-#HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-#    CMD pgrep -f "php-fpm: master process"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+   CMD pgrep -f "php-fpm: master process"
 
 # Sets the main command to be executed when the container starts. The init.sh script will run.
 #ENTRYPOINT ["/usr/local/bin/init.sh"]
